@@ -174,16 +174,26 @@ class MarketingOpsFacade:
 
     def overview_stats(self) -> dict[str, Any]:
         excel = pd.ExcelFile(self.paths["gtm"])
-        source_rows = sum(len(pd.read_excel(excel, sheet_name=sheet)) for sheet in ("FB", "TT", "GG"))
+        source_counts = {sheet: len(pd.read_excel(excel, sheet_name=sheet)) for sheet in ("FB", "TT", "GG")}
+        source_rows = sum(source_counts.values())
         plans = json.loads(Path(self.paths["media_plan_json"]).read_text(encoding="utf-8"))
         ads = MockGoogleAdsConnector(self.paths["google_ads"]).list_qc_objects()
         qc = GoogleAdsQCService().run(plans, ads)
         total_checks = qc.passed + qc.warnings + qc.errors
+        tasks = self.repository.list_tasks()
         return {
             "source_rows": source_rows,
+            "source_counts": source_counts,
             "projects": len(self.config.projects),
+            "markets": [project.country for project in self.config.projects],
             "qc_pass_rate": qc.passed / total_checks if total_checks else 0,
-            "recent_tasks": len(self.repository.list_tasks()),
+            "qc_passed": qc.passed,
+            "qc_warnings": qc.warnings,
+            "qc_errors": qc.errors,
+            "qc_total": total_checks,
+            "open_exceptions": qc.warnings + qc.errors,
+            "recent_tasks": len(tasks),
+            "latest_tasks": tasks[:8],
         }
 
     def save_projects(self, projects: list[ProjectConfig]) -> None:

@@ -2,6 +2,8 @@
 
 Advertising data automation, daily reporting, FIFA synchronization and Google Ads quality control in one Streamlit operations workspace.
 
+**Live application:** [Open the Marketing Operations Workspace](https://marketing-ops-ai-agent-j2emewdndkoczut9ya4s2q.streamlit.app/)
+
 > **Public Sandbox:** the hosted workspace uses anonymized sample data and contains no customer records. Every metric, anomaly, synchronization result and QC finding is calculated by the application at runtime.
 
 ## Product Overview
@@ -40,14 +42,14 @@ The UI, CLI and Agent call the same application services. Calculation, cleaning 
 
 ## Core Capabilities
 
-- **Overview:** operational Clean → Report → Sync → QC workflow.
+- **Operations Overview:** runtime KPI, source readiness, QC posture, exception queue and session workflow status.
 - **Data Cleaning:** target-sheet detection, early project/date filtering, YAML rules, validation, audit log and Excel export.
 - **Daily Report:** Python-calculated KPI, pacing, trends, platform, audience and creative analysis.
 - **AI Diagnosis:** fact-grounded explanations with explicit human-confirmation boundaries.
 - **FIFA Sync:** target-schema cleaning, deterministic business keys and idempotent Upsert.
 - **Google Ads QC:** dynamic Sheet/Header detection, confirmed schema mapping, naming parsers and strict canonical comparison.
-- **Agent Chat:** transparent intent routing through an allow-listed tool registry.
-- **Task History:** RUNNING/SUCCESS/WARNING/FAILED execution history.
+- **Agent Copilot:** transparent intent routing through an allow-listed tool registry.
+- **Activity & Audit:** RUNNING/SUCCESS/WARNING/FAILED execution history and cached evidence.
 - **Settings:** session-scoped project dates, budgets, Sheet IDs and thresholds.
 
 ## Technology Stack
@@ -64,8 +66,8 @@ The UI, CLI and Agent call the same application services. Calculation, cleaning 
 ## Repository Structure
 
 ```text
-app.py                  Overview entry point
-pages/                  Seven workflow pages
+app.py                  Grouped Streamlit navigation entry point
+pages/                  Overview plus seven workflow pages
 src/application/        Shared application facade and task runner
 src/etl/                Workbook inspection and cleaning engine
 src/reporting/          KPI, pacing, analysis and diagnosis
@@ -73,6 +75,8 @@ src/fifa/               File scanning, cleaning and idempotent synchronization
 src/qc/                 Mapping, parsing, matching and validators
 src/connectors/         Sandbox and external-system adapters
 src/storage/            Session and SQLAlchemy repositories
+src/ui/                 Theme, navigation, reusable components and charts
+assets/                 Product wordmark used by the application shell
 config/                 Projects, cleaning, anomaly and QC rules
 data/sample/            Anonymized sample workspace
 tests/                  Unit, safety, integration and UI tests
@@ -120,7 +124,7 @@ Environment variable names are documented in `.env.example`. Credentials are loa
 
 ## Security Boundaries
 
-- No customer or former-employer data is included.
+- No customer or proprietary operational data is included.
 - Sample Excel and JSON files are generated deterministically from anonymized business-shaped records.
 - `.env`, databases, service-account files, local outputs and caches are excluded from Git.
 - Google Ads external access is read-only by interface design.
@@ -131,7 +135,9 @@ Environment variable names are documented in `.env.example`. Credentials are loa
 
 The application is compatible with Streamlit Community Cloud and Docker-based platforms.
 
-For Streamlit Community Cloud, select the public repository, `main` branch and `app.py`. No secrets are required for the Public Sandbox.
+The hosted Public Sandbox is available at [marketing-ops-ai-agent-j2emewdndkoczut9ya4s2q.streamlit.app](https://marketing-ops-ai-agent-j2emewdndkoczut9ya4s2q.streamlit.app/).
+
+For a separate Streamlit Community Cloud deployment, select the public repository, `main` branch and `app.py`. No secrets are required for the Public Sandbox.
 
 For Docker:
 
@@ -152,4 +158,3 @@ docker run --rm -p 8501:8501 marketing-ops-ai-agent
 - [Architecture for non-technical readers](docs/ARCHITECTURE_CN.md)
 - [Chinese runbook](docs/RUNBOOK_CN.md)
 - [Data dictionary](docs/DATA_DICTIONARY_CN.md)
-

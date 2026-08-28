@@ -1,4 +1,4 @@
-"""Google Ads QC Workflow。"""
+"""Google Ads 只读质量控制工作台。"""
 
 from __future__ import annotations
 
@@ -7,79 +7,125 @@ from io import BytesIO
 import pandas as pd
 import streamlit as st
 
+from src.ui.components import empty_state, kpi_grid, page_header, sandbox_notice, section_header, workflow_stepper
 from src.ui.dataframe import excel_bytes, safe_display_frame
-from src.ui.layout import page_header, sandbox_banner, setup_page
+from src.ui.layout import setup_page
 from src.ui.state import get_facade
 
-setup_page("Google Ads QC", "✅")
-facade = get_facade()
-page_header("Google Ads QC", "Human-confirmed Media Plan mapping and strict read-only validation for GDN, VRC and VVC.")
-sandbox_banner()
 
-source_mode = st.radio("Media Plan Source", ["Sample Media Plan", "Upload Media Plan"], horizontal=True)
-uploaded = st.file_uploader("Upload Media Plan", type=["xlsx", "xls"], disabled=source_mode == "Sample Media Plan")
-detect = st.button("1 · Detect Sheets & Schema", type="primary")
+setup_page("Google Ads QC", ":material/fact_check:")
+facade = get_facade()
+page_header(
+    "Google Ads quality control",
+    "Confirm a variable media-plan schema, then compare deployed GDN, VRC and VVC objects through strict read-only rules.",
+    "Assurance",
+    "Google Ads connector · Read only",
+)
+sandbox_notice("Media-plan sample and sandbox ad objects · No campaign mutation")
+
+inspection = st.session_state.get("qc_inspection")
+mapping_confirmed = bool(st.session_state.get("mapping_confirmed"))
+qc = st.session_state.get("qc_result")
+active_step = 2 if mapping_confirmed else 1 if inspection else 0
+workflow_stepper(("Detect source", "Confirm mapping", "Review findings"), active_step)
+
+section_header("Media-plan source", "Use the included plan or upload an Excel workbook with a compatible campaign schema.")
+with st.container(border=True):
+    source_column, upload_column, action_column = st.columns([1.15, 1.6, .9], vertical_alignment="bottom")
+    with source_column:
+        source_mode = st.radio("Source", ["Included media plan", "Upload media plan"], horizontal=False)
+    with upload_column:
+        uploaded = st.file_uploader("Media plan workbook", type=["xlsx", "xls"], disabled=source_mode == "Included media plan")
+    with action_column:
+        detect = st.button("Detect schema", type="primary" if not inspection else "secondary", width="stretch")
+
 if detect:
     try:
         source_bytes = (
             facade.paths["media_plan"].read_bytes()
-            if source_mode == "Sample Media Plan"
+            if source_mode == "Included media plan"
             else uploaded.getvalue() if uploaded else None
         )
         if not source_bytes:
-            raise ValueError("Please upload a Media Plan first.")
-        inspection = facade.inspect_media_plan(BytesIO(source_bytes))
-        st.session_state["qc_source_bytes"] = source_bytes
-        st.session_state["qc_inspection"] = inspection
-        st.session_state["mapping_confirmed"] = False
-        st.success(f"Detected {inspection.selected_sheet}, header row {inspection.header_row}.")
+            raise ValueError("Upload a media-plan workbook first.")
+        with st.spinner("Detecting sheets, header row and canonical field mappings..."):
+            detected = facade.inspect_media_plan(BytesIO(source_bytes))
+            st.session_state["qc_source_bytes"] = source_bytes
+            st.session_state["qc_source_mode"] = source_mode
+            st.session_state["qc_inspection"] = detected
+            st.session_state["mapping_confirmed"] = False
+            st.session_state.pop("qc_result", None)
+        st.success(f"Detected sheet '{detected.selected_sheet}' with header row {detected.header_row}.")
+        st.rerun()
     except Exception as exc:
-        st.error(f"Detection failed: {exc}")
+        st.error(f"Schema detection failed. Confirm the workbook contains a campaign table. Detail: {exc}")
 
 inspection = st.session_state.get("qc_inspection")
 if inspection:
-    st.markdown("### 2 · Review Schema Mapping")
-    st.caption(f"Detected sheets: {', '.join(inspection.detected_sheets)}")
+    section_header("Schema mapping", "Review every source-to-canonical field decision before enabling QC.", f"Sheet · {inspection.selected_sheet}")
     mapping_frame = pd.DataFrame([item.model_dump() for item in inspection.mappings])
-    st.dataframe(mapping_frame[["source_column", "canonical_field", "confidence"]], width="stretch", hide_index=True)
-    low_confidence = mapping_frame["confidence"].lt(0.85).sum() if not mapping_frame.empty else 0
-    if low_confidence:
-        st.warning(f"{low_confidence} low-confidence mappings require special attention.")
-    if st.button("Confirm Mapping"):
-        inspection.mappings = [item.model_copy(update={"confirmed": True}) for item in inspection.mappings]
-        st.session_state["qc_inspection"] = inspection
-        st.session_state["mapping_confirmed"] = True
-        st.success("Mapping confirmed. QC is now enabled.")
-
-st.markdown("### 3 · Load Google Ads Data & Run QC")
-mapping_confirmed = bool(st.session_state.get("mapping_confirmed"))
-if st.button("Run QC", type="primary", disabled=not mapping_confirmed):
-    try:
-        inspection = st.session_state["qc_inspection"]
-        parsed = facade.parse_media_plan(
-            BytesIO(st.session_state["qc_source_bytes"]),
-            inspection,
-            True,
+    with st.container(border=True):
+        st.caption(f"Detected sheets: {', '.join(inspection.detected_sheets)} · Header row: {inspection.header_row}")
+        st.dataframe(
+            mapping_frame[["source_column", "canonical_field", "confidence"]],
+            width="stretch",
+            hide_index=True,
+            column_config={"confidence": st.column_config.ProgressColumn("Confidence", min_value=0.0, max_value=1.0, format="%.0%%")},
         )
-        plans = parsed.astype(object).where(pd.notnull(parsed), None).to_dict(orient="records")
-        st.session_state["qc_result"] = facade.run_ads_qc(plans)
-        st.success("Read-only Google Ads QC completed.")
-    except Exception as exc:
-        st.error(f"QC failed: {exc}")
+        low_confidence = mapping_frame["confidence"].lt(0.85).sum() if not mapping_frame.empty else 0
+        if low_confidence:
+            st.warning(f"{low_confidence} low-confidence mapping(s) require operator review before confirmation.")
+        elif not mapping_confirmed:
+            st.success("All detected mappings meet the confidence threshold.")
+        confirm_column, _ = st.columns([1, 4])
+        if confirm_column.button("Confirm mapping", type="primary" if not mapping_confirmed else "secondary", disabled=mapping_confirmed, width="stretch"):
+            inspection.mappings = [item.model_copy(update={"confirmed": True}) for item in inspection.mappings]
+            st.session_state["qc_inspection"] = inspection
+            st.session_state["mapping_confirmed"] = True
+            st.success("Mapping confirmed. Read-only quality control is enabled.")
+            st.rerun()
+
+mapping_confirmed = bool(st.session_state.get("mapping_confirmed"))
+if mapping_confirmed:
+    section_header("Run quality control", "Load the sandbox Google Ads objects and evaluate every configured rule.")
+    run_column, context_column = st.columns([1, 4], vertical_alignment="center")
+    run_qc = run_column.button("Run quality control", type="primary", width="stretch")
+    context_column.caption("The connector lists campaign objects only. Enable, pause, budget, bid, audience and creative changes are not exposed.")
+    if run_qc:
+        try:
+            confirmed_inspection = st.session_state["qc_inspection"]
+            if st.session_state.get("qc_source_mode") == "Included media plan":
+                plans = None
+            else:
+                parsed = facade.parse_media_plan(BytesIO(st.session_state["qc_source_bytes"]), confirmed_inspection, True)
+                plans = parsed.astype(object).where(pd.notnull(parsed), None).to_dict(orient="records")
+            with st.spinner("Comparing canonical plan values with deployed ad objects..."):
+                st.session_state["qc_result"] = facade.run_ads_qc(plans)
+            st.success("Read-only Google Ads quality control completed.")
+        except Exception as exc:
+            st.error(f"Quality control failed. Review the confirmed mapping and source values. Detail: {exc}")
 
 qc = st.session_state.get("qc_result")
 if qc:
-    summary = st.columns(4)
-    summary[0].metric("Objects Checked", qc.objects_checked)
-    summary[1].metric("PASS", qc.passed)
-    summary[2].metric("WARNING", qc.warnings)
-    summary[3].metric("ERROR", qc.errors)
+    section_header("Quality summary", "Field-level rule outcomes for the current run.")
+    kpi_grid(
+        [
+            {"label": "Objects checked", "value": f"{qc.objects_checked:,}", "badge": "Scope", "tone": "neutral"},
+            {"label": "Passed", "value": f"{qc.passed:,}", "badge": "PASS", "tone": "success"},
+            {"label": "Warnings", "value": f"{qc.warnings:,}", "badge": "WARNING", "tone": "warning"},
+            {"label": "Errors", "value": f"{qc.errors:,}", "badge": "ERROR", "tone": "error"},
+        ]
+    )
+
     result_frame = pd.DataFrame([item.model_dump(mode="json") for item in qc.results])
     result_frame.columns = [column.replace("_", " ").title() for column in result_frame.columns]
-    filter_left, filter_mid, filter_right = st.columns([1, 1, 2])
-    levels = filter_left.multiselect("Level", ["PASS", "WARNING", "ERROR"], default=["WARNING", "ERROR"])
-    object_level = filter_mid.multiselect("Object Level", sorted(result_frame["Object Level"].unique()))
-    search = filter_right.text_input("Search object or field")
+    section_header("Findings", "Filter by severity and object level, then inspect the canonical comparison behind any exception.", f"{len(result_frame):,} findings")
+    with st.container(border=True):
+        filter_left, filter_mid, filter_right = st.columns([1, 1, 1.5])
+        levels = filter_left.multiselect("Severity", ["PASS", "WARNING", "ERROR"], default=["WARNING", "ERROR"])
+        object_level = filter_mid.multiselect("Object level", sorted(result_frame["Object Level"].unique()))
+        search = filter_right.text_input("Search object, field or explanation")
+
     filtered = result_frame[result_frame["Level"].isin(levels)] if levels else result_frame
     if object_level:
         filtered = filtered[filtered["Object Level"].isin(object_level)]
@@ -90,27 +136,41 @@ if qc:
 
     detail_rows = filtered[filtered["Level"].isin(["WARNING", "ERROR"])]
     if not detail_rows.empty:
-        st.markdown("### Error Detail")
+        section_header("Exception detail", "Trace the expected value, actual value, rule and recommended operator action.")
         labels = [f"{row['Level']} · {row['Object Name']} · {row['Field']}" for _, row in detail_rows.iterrows()]
-        selected = st.selectbox("Select result", labels)
+        selected = st.selectbox("Finding", labels)
         row = detail_rows.iloc[labels.index(selected)]
-        detail_columns = st.columns(2)
-        detail_columns[0].json({
-            "Media Plan Source": row["Plan Value"],
-            "Canonical Plan Value": row["Canonical Plan Value"],
-            "Rule": row["Rule"],
-        })
-        detail_columns[1].json({
-            "Google Ads Source": row["Ads Value"],
-            "Canonical Ads Value": row["Canonical Ads Value"],
-            "Reason": row["Explanation"],
-            "Suggested Fix": row["Suggested Action"],
-        })
-    st.download_button(
-        "Export QC Excel",
+        plan_column, ads_column = st.columns(2)
+        with plan_column:
+            with st.container(border=True):
+                st.markdown("#### Confirmed media plan")
+                st.caption("Source value")
+                st.code(str(row["Plan Value"]), language=None)
+                st.caption("Canonical value")
+                st.code(str(row["Canonical Plan Value"]), language=None)
+                st.caption(f"Rule · {row['Rule']}")
+        with ads_column:
+            with st.container(border=True):
+                st.markdown("#### Google Ads object")
+                st.caption("Source value")
+                st.code(str(row["Ads Value"]), language=None)
+                st.caption("Canonical value")
+                st.code(str(row["Canonical Ads Value"]), language=None)
+                st.warning(f"{row['Explanation']} Recommended action: {row['Suggested Action']}")
+
+    export_column, _ = st.columns([1, 4])
+    export_column.download_button(
+        "Export QC workbook",
         excel_bytes({"QC Results": result_frame}),
         file_name="google_ads_qc_report.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        width="stretch",
     )
-else:
-    st.info("Detect the Media Plan and explicitly confirm the mapping before running QC. Google Ads access remains read-only for both Sandbox and External connectors.")
+elif not inspection:
+    empty_state(
+        "Start with media-plan detection",
+        "Detect the source schema and explicitly confirm the mapping before quality control can access the read-only ad-object connector.",
+        "04",
+    )
+elif not mapping_confirmed:
+    empty_state("Mapping confirmation required", "Review the detected source fields above. Quality control remains disabled until an operator confirms the mapping.", "02")

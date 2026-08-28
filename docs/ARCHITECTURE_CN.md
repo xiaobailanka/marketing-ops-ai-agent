@@ -6,7 +6,7 @@ Marketing Ops AI Agent 把广告运营中四类工作放在一个中台：数据
 
 ```mermaid
 flowchart TD
-    A[运营人员] --> B[Streamlit 页面]
+    A[运营人员] --> B[Streamlit 分组导航与工作台]
     B --> C[Application Facade]
     C --> D[GTM 清洗]
     C --> E[日报与 KPI]
@@ -19,7 +19,26 @@ flowchart TD
     C --> L[Task History]
 ```
 
-## 2. 常见术语
+## 2. UI 架构与信息分层
+
+界面使用 Slate & Emerald 企业运营中台风格。`app.py` 只负责启动分组导航，页面按职责分成四组：
+
+- Monitor：Overview 管理驾驶舱。
+- Operate：Data Cleaning 与 Daily Report 日常操作。
+- Assurance：FIFA Sync 与 Google Ads QC 风险控制。
+- System：Agent Copilot、Activity & Audit 与 Settings。
+
+UI 代码也按职责拆分：
+
+- `src/ui/theme.py`：颜色、间距、全局 CSS 与 Plotly 主题。
+- `src/ui/navigation.py`：分组页面导航和侧栏环境状态。
+- `src/ui/components.py`：页面标题、状态标签、KPI、步骤条、空状态和表格。
+- `src/ui/layout.py`：页面配置和共享应用外壳。
+- `src/ui/charts.py`：统一图表风格。
+
+这些模块只负责展示，不执行 ETL、KPI、同步、QC 或 LLM 计算。
+
+## 3. 常见术语
 
 ### API 是什么
 
@@ -61,7 +80,7 @@ Upsert = Update + Insert。目标记录不存在就 Insert，已存在但内容�
 
 Human-in-the-loop 表示 AI 或规则给出建议后，人必须确认关键步骤。Media Plan 列名不固定，系统先建议 Schema Mapping，但用户必须点击 Confirm Mapping，之后才能运行 QC。
 
-## 3. 为什么 Python 和 LLM 要分工
+## 4. 为什么 Python 和 LLM 要分工
 
 Python 负责：
 
@@ -80,11 +99,11 @@ LLM 负责：
 
 如果让 LLM 直接计算 KPI，同一输入可能得到不一致答案，也难以审计。Python 公式可以被测试、复现和逐行检查，因此数字必须由 Python 计算。
 
-## 4. 为什么 Sandbox 和 External Connector 分开
+## 5. 为什么 Sandbox 和 External Connector 分开
 
 公开环境不能依赖客户账号，也不能暴露客户数据。Sandbox Connector 使用固定 Seed 的匿名化样例数据，使工作流可重复验证。External Connector 保留标准 API 接口，在取得合法权限后不需要重写业务规则。
 
-## 5. 四个核心数据流
+## 6. 四个核心数据流
 
 ### GTM Cleaning
 
@@ -115,12 +134,12 @@ Media Plan → Sheet/Header 检测 → Schema Mapping → 人工确认
 → Strict Comparator → PASS / WARNING / ERROR
 ```
 
-## 6. Public Sandbox 与 External Integration 状态
+## 7. Public Sandbox 与 External Integration 状态
 
-Public Sandbox 使用 Streamlit Session State。每位访客有自己的任务、Sandbox Sheet 和 Sandbox Bitable，Reset Workspace 只清理当前访客。
+Public Sandbox 使用 Streamlit Session State。每位访客有自己的任务、Sandbox Sheet 和 Sandbox Bitable；新的浏览器 Session 会获得独立工作空间。
 
 持久化环境使用 SQLAlchemy + SQLite，并可把 `DATABASE_PATH` 指向持久卷。Google Ads External Connector 只提供读取方法，Agent 和页面都没有广告写工具。
 
-## 7. 为什么选择 Streamlit
+## 8. 为什么选择 Streamlit
 
 Streamlit 能用纯 Python 构建数据表、图表、上传、下载和运营工作流。它让业务逻辑与 UI 使用同一种语言。其高并发、多租户和复杂交互能力不如专业前后端框架，因此未来大规模部署可以把 Application Service 迁移到 FastAPI。

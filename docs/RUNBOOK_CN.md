@@ -58,13 +58,13 @@ http://localhost:8501
 
 首次使用建议顺序：
 
-1. Overview 点击 Open Workspace。
-2. Data Cleaning 选择 UG 和 2026-08-26，点击 Run Cleaning。
-3. Daily Report 生成同日期日报。
-4. FIFA Sync 先 Run Sync，再运行第二次查看 Skip。
-5. Google Ads QC 点击 Detect、Confirm Mapping、Run QC。
-6. Agent Chat 输入示例问题。
-7. Task History 查看执行记录。
+1. Overview 查看 Runtime KPI、QC posture 和 Attention queue。
+2. Data Cleaning 选择 UG 和 2026-08-26，点击 Run cleaning。
+3. Daily Report 点击 Generate report 生成同日期日报。
+4. FIFA Sync 先 Preview cleaning，再 Run sync；第二次运行可验证 Skip。
+5. Google Ads QC 依次点击 Detect schema、Confirm mapping、Run quality control。
+6. Agent Copilot 选择一个 Common command 或输入运营请求。
+7. Activity & Audit 查看任务状态和缓存的审计证据。
 
 ## 6. 运行测试
 
@@ -199,7 +199,7 @@ streamlit run app.py --server.port 8502
 
 ### 页面显示旧结果
 
-点击 Overview 的 Reset Workspace，或刷新浏览器新建 Session。
+Public Sandbox 状态按浏览器 Session 隔离。刷新页面会保留当前 Session；关闭该会话后重新打开，或使用新的无痕窗口，可获得全新 Session。
 
 ### Google Ads 为什么不能修改
 
