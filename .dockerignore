@@ -1,0 +1,13 @@
+.git
+.gitignore
+.venv
+__pycache__
+.pytest_cache
+.superpowers
+.tmp
+.env
+data/app.db
+data/outputs
+credentials*.json
+service-account*.json
+

@@ -1,0 +1,14 @@
+.superpowers/
+.tmp/
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+.env
+data/app.db
+data/outputs/*
+!data/outputs/.gitkeep
+credentials*.json
+service-account*.json

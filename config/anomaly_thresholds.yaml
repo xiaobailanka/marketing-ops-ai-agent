@@ -1,0 +1,6 @@
+relative_change: 0.20
+budget_pacing_percentage_points: 0.10
+min_impressions: 1000
+min_spend_usd: 10
+trailing_days: 7
+

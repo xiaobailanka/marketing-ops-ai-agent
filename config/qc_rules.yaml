@@ -1,0 +1,24 @@
+supported_ad_types:
+  - GDN
+  - VRC
+  - VVC
+mapping_confidence_warning: 0.85
+expected_prelaunch_status: PAUSED
+budget_type: TOTAL
+fuzzy_warning_threshold: 80
+critical_campaign_fields:
+  - country
+  - objective
+  - ad_type
+  - total_budget
+  - start_date
+  - end_date
+  - status
+critical_ad_group_fields:
+  - audience_name
+  - bid
+critical_ad_fields:
+  - final_url
+  - creative_name
+  - cta
+

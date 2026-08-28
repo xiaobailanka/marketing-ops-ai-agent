@@ -1,0 +1,16 @@
+streamlit>=1.38,<2
+pandas>=2.2,<3
+openpyxl>=3.1,<4
+pydantic>=2.7,<3
+PyYAML>=6.0,<7
+SQLAlchemy>=2.0,<3
+plotly>=5.24,<7
+rapidfuzz>=3.9,<4
+requests>=2.32,<3
+python-dotenv>=1.0,<2
+google-auth>=2.35,<3
+google-api-python-client>=2.149,<3
+google-ads>=25,<30
+openai>=1.50,<3
+pytest>=8.3,<10
+

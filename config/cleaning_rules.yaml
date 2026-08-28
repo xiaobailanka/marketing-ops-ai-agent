@@ -1,0 +1,57 @@
+total_row_tokens:
+  - total
+  - 总计
+category_fields:
+  - Objective
+  - Marketing Funnel
+  - Media
+  - Platform
+  - Media Buy Type
+  - Stage
+  - Country
+  - Creative Type
+category_mappings:
+  Platform:
+    facebook: FB
+    fb: FB
+    tiktok: TT
+    tt: TT
+    google: GG
+    gg: GG
+  Country:
+    ug: UG
+    sn: SN
+    pk: PK
+  Creative Type:
+    image: Image
+    video: Video
+    carousel: Carousel
+objective_funnel_mapping:
+  reach: Awareness
+  awareness: Awareness
+  video views: Engagement
+  follower: Engagement
+  post engagement: Engagement
+  engagement: Engagement
+  traffic: Traffic
+  conversion: Conversion
+required_fields:
+  - Country
+  - Project Name
+  - Date
+  - Platform
+  - Objective
+  - Impression
+numeric_fields:
+  - Spend
+  - Impression
+  - Reach
+  - Engagement
+  - Video View
+  - Follower
+  - Link Click
+  - Add to Cart
+  - Purchase
+  - Purchase Value
+  - All Clicks
+

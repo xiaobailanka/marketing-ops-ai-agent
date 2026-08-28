@@ -1,0 +1,25 @@
+mode: demo
+timezone: Asia/Shanghai
+projects:
+  - country: UG
+    project_name: CAMON 50 Campaign
+    campaign_start_date: 2026-07-28
+    campaign_end_date: 2026-08-26
+    total_budget: 50000
+    google_sheet_id: ""
+    anomaly_threshold: 0.20
+  - country: SN
+    project_name: Spark 50 Campaign
+    campaign_start_date: 2026-07-28
+    campaign_end_date: 2026-08-26
+    total_budget: 42000
+    google_sheet_id: ""
+    anomaly_threshold: 0.20
+  - country: PK
+    project_name: PK CAMON 50 Campaign
+    campaign_start_date: 2026-07-28
+    campaign_end_date: 2026-08-26
+    total_budget: 60000
+    google_sheet_id: ""
+    anomaly_threshold: 0.20
+

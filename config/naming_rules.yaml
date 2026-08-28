@@ -1,0 +1,29 @@
+campaign_separator: "_"
+ad_group_separator: "_"
+ad_separator: "_"
+targeting_strategies:
+  - INT
+  - RMKT
+  - LAL
+  - RMKT&LAL
+  - Broad
+  - KW
+  - Device
+  - Placement
+  - Content
+keyword_themes:
+  - Brand KWs
+  - Products KWs
+  - Generic KWs
+  - Competitor KWs
+match_types:
+  - Broad
+  - Phrase
+  - Exact
+creative_formats:
+  - Image
+  - Video
+  - Carousel
+  - Collection
+  - Text
+
