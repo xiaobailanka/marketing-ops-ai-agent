@@ -8,6 +8,8 @@ from io import BytesIO
 import pandas as pd
 import streamlit as st
 
+from src.ui.dataframe import display_dataframe
+
 from src.ui.components import empty_state, kpi_grid, page_header, sandbox_notice, section_header, workflow_stepper
 from src.ui.dataframe import excel_bytes, safe_display_frame
 from src.ui.layout import setup_page
@@ -16,19 +18,20 @@ from src.ui.state import get_facade
 
 setup_page("Data Cleaning", ":material/cleaning_services:")
 facade = get_facade()
-page_header(
-    "Data cleaning",
-    "Filter a market workbook, normalize funnel fields and preserve a row-level audit trail for every correction.",
-    "Operate",
-    "Deterministic ETL · Audited",
-)
-sandbox_notice("GTM workbook · Session isolated")
+with st.container(key="page_intro"):
+    page_header(
+        "Data cleaning",
+        "Filter a market workbook, normalize funnel fields and preserve a row-level audit trail for every correction.",
+        "Operate",
+        "Deterministic ETL · Audited",
+    )
+    sandbox_notice("GTM workbook · Session isolated")
 
-workflow_stepper(("Select scope", "Run cleaning", "Review output"), 2 if st.session_state.get("cleaning_result") else 0)
+    workflow_stepper(("Select scope", "Run cleaning", "Review output"), 2 if st.session_state.get("cleaning_result") else 0)
 section_header("Source and scope", "Choose the operating market and report date. Uploading a workbook overrides the included sample source.")
 
 project_names = [f"{item.country} · {item.project_name}" for item in facade.config.projects]
-with st.container(border=True):
+with st.container(border=True, key="panel_1_Data_Cleaning_1"):
     controls = st.columns([1.25, 1, 1.35, .9], vertical_alignment="bottom")
     with controls[0]:
         selection = st.selectbox("Project", project_names)
@@ -76,12 +79,12 @@ if result:
     section_header("Data review", "Compare source and cleaned output, then inspect the exact rule applied to each changed row.")
     tabs = st.tabs(["Source preview", "Clean output", "Audit log", "Validation"])
     with tabs[0]:
-        st.dataframe(safe_display_frame(result.before.head(200)), width="stretch", hide_index=True)
+        display_dataframe(safe_display_frame(result.before.head(200)), width="stretch", hide_index=True)
     with tabs[1]:
-        st.dataframe(safe_display_frame(result.after.head(500)), width="stretch", hide_index=True)
+        display_dataframe(safe_display_frame(result.after.head(500)), width="stretch", hide_index=True)
     with tabs[2]:
         audit = pd.DataFrame([item.model_dump(mode="json") for item in result.audit_log])
-        st.dataframe(safe_display_frame(audit), width="stretch", hide_index=True)
+        display_dataframe(safe_display_frame(audit), width="stretch", hide_index=True)
     with tabs[3]:
         if result.warnings:
             for warning in result.warnings:

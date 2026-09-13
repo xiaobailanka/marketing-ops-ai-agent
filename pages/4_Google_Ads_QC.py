@@ -7,6 +7,8 @@ from io import BytesIO
 import pandas as pd
 import streamlit as st
 
+from src.ui.dataframe import display_dataframe
+
 from src.ui.components import empty_state, kpi_grid, page_header, sandbox_notice, section_header, workflow_stepper
 from src.ui.dataframe import excel_bytes, safe_display_frame
 from src.ui.layout import setup_page
@@ -15,22 +17,23 @@ from src.ui.state import get_facade
 
 setup_page("Google Ads QC", ":material/fact_check:")
 facade = get_facade()
-page_header(
-    "Google Ads quality control",
-    "Confirm a variable media-plan schema, then compare deployed GDN, VRC and VVC objects through strict read-only rules.",
-    "Assurance",
-    "Google Ads connector · Read only",
-)
-sandbox_notice("Media-plan sample and sandbox ad objects · No campaign mutation")
+with st.container(key="page_intro"):
+    page_header(
+        "Google Ads quality control",
+        "Confirm a variable media-plan schema, then compare deployed GDN, VRC and VVC objects through strict read-only rules.",
+        "Assurance",
+        "Google Ads connector · Read only",
+    )
+    sandbox_notice("Media-plan sample and sandbox ad objects · No campaign mutation")
 
-inspection = st.session_state.get("qc_inspection")
-mapping_confirmed = bool(st.session_state.get("mapping_confirmed"))
-qc = st.session_state.get("qc_result")
-active_step = 2 if mapping_confirmed else 1 if inspection else 0
-workflow_stepper(("Detect source", "Confirm mapping", "Review findings"), active_step)
+    inspection = st.session_state.get("qc_inspection")
+    mapping_confirmed = bool(st.session_state.get("mapping_confirmed"))
+    qc = st.session_state.get("qc_result")
+    active_step = 2 if mapping_confirmed else 1 if inspection else 0
+    workflow_stepper(("Detect source", "Confirm mapping", "Review findings"), active_step)
 
 section_header("Media-plan source", "Use the included plan or upload an Excel workbook with a compatible campaign schema.")
-with st.container(border=True):
+with st.container(border=True, key="panel_4_Google_Ads_QC_1"):
     source_column, upload_column, action_column = st.columns([1.15, 1.6, .9], vertical_alignment="bottom")
     with source_column:
         source_mode = st.radio("Source", ["Included media plan", "Upload media plan"], horizontal=False)
@@ -64,9 +67,9 @@ inspection = st.session_state.get("qc_inspection")
 if inspection:
     section_header("Schema mapping", "Review every source-to-canonical field decision before enabling QC.", f"Sheet · {inspection.selected_sheet}")
     mapping_frame = pd.DataFrame([item.model_dump() for item in inspection.mappings])
-    with st.container(border=True):
+    with st.container(border=True, key="panel_4_Google_Ads_QC_2"):
         st.caption(f"Detected sheets: {', '.join(inspection.detected_sheets)} · Header row: {inspection.header_row}")
-        st.dataframe(
+        display_dataframe(
             mapping_frame[["source_column", "canonical_field", "confidence"]],
             width="stretch",
             hide_index=True,
@@ -120,7 +123,7 @@ if qc:
     result_frame = pd.DataFrame([item.model_dump(mode="json") for item in qc.results])
     result_frame.columns = [column.replace("_", " ").title() for column in result_frame.columns]
     section_header("Findings", "Filter by severity and object level, then inspect the canonical comparison behind any exception.", f"{len(result_frame):,} findings")
-    with st.container(border=True):
+    with st.container(border=True, key="panel_4_Google_Ads_QC_3"):
         filter_left, filter_mid, filter_right = st.columns([1, 1, 1.5])
         levels = filter_left.multiselect("Severity", ["PASS", "WARNING", "ERROR"], default=["WARNING", "ERROR"])
         object_level = filter_mid.multiselect("Object level", sorted(result_frame["Object Level"].unique()))
@@ -132,7 +135,7 @@ if qc:
     if search:
         mask = filtered.astype(str).apply(lambda column: column.str.contains(search, case=False, na=False)).any(axis=1)
         filtered = filtered[mask]
-    st.dataframe(safe_display_frame(filtered), width="stretch", hide_index=True)
+    display_dataframe(safe_display_frame(filtered), width="stretch", hide_index=True)
 
     detail_rows = filtered[filtered["Level"].isin(["WARNING", "ERROR"])]
     if not detail_rows.empty:
@@ -142,7 +145,7 @@ if qc:
         row = detail_rows.iloc[labels.index(selected)]
         plan_column, ads_column = st.columns(2)
         with plan_column:
-            with st.container(border=True):
+            with st.container(border=True, key="panel_4_Google_Ads_QC_4"):
                 st.markdown("#### Confirmed media plan")
                 st.caption("Source value")
                 st.code(str(row["Plan Value"]), language=None)
@@ -150,7 +153,7 @@ if qc:
                 st.code(str(row["Canonical Plan Value"]), language=None)
                 st.caption(f"Rule · {row['Rule']}")
         with ads_column:
-            with st.container(border=True):
+            with st.container(border=True, key="panel_4_Google_Ads_QC_5"):
                 st.markdown("#### Google Ads object")
                 st.caption("Source value")
                 st.code(str(row["Ads Value"]), language=None)

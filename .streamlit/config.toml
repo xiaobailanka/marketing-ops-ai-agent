@@ -7,8 +7,11 @@ gatherUsageStats = false
 
 [theme]
 base = "light"
-primaryColor = "#167A6C"
-backgroundColor = "#F3F6F5"
+primaryColor = "#047857"
+backgroundColor = "#F8FAFC"
 secondaryBackgroundColor = "#FFFFFF"
-textColor = "#142725"
+textColor = "#0F172A"
 font = "sans serif"
+borderColor = "#E2E8F0"
+dataframeBorderColor = "#E2E8F0"
+dataframeHeaderBackgroundColor = "#F1F5F9"

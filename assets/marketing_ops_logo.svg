@@ -2,11 +2,11 @@
   <title id="title">Marketing Operations</title>
   <desc id="desc">Marketing Operations Control Workspace wordmark</desc>
   <g fill="none" fill-rule="evenodd">
-    <rect x="2" y="5" width="34" height="34" rx="9" fill="#1D4847" stroke="#3C6F69"/>
-    <rect x="10" y="23" width="4" height="8" rx="2" fill="#8FE1D1"/>
-    <rect x="17" y="16" width="4" height="15" rx="2" fill="#65CDB9"/>
+    <rect x="2" y="5" width="34" height="34" rx="9" fill="#047857" stroke="#10B981"/>
+    <rect x="10" y="23" width="4" height="8" rx="2" fill="#6EE7B7"/>
+    <rect x="17" y="16" width="4" height="15" rx="2" fill="#D1FAE5"/>
     <rect x="24" y="11" width="4" height="20" rx="2" fill="#FFFFFF"/>
     <text x="47" y="21" fill="#FFFFFF" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="700">Marketing Operations</text>
-    <text x="47" y="35" fill="#70C7B7" font-family="Segoe UI, Arial, sans-serif" font-size="8" font-weight="700" letter-spacing="1.25">CONTROL WORKSPACE</text>
+    <text x="47" y="35" fill="#94A3B8" font-family="Segoe UI, Arial, sans-serif" font-size="8" font-weight="700" letter-spacing="1.25">CONTROL WORKSPACE</text>
   </g>
 </svg>

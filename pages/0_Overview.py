@@ -6,6 +6,8 @@ from html import escape
 
 import streamlit as st
 
+from src.ui.dataframe import display_dataframe
+
 from src.models.task import TaskStatus, TaskType
 from src.ui.charts import quality_posture_chart, source_coverage_chart
 from src.ui.components import attention_item, html_table, kpi_grid, page_header, pill, sandbox_notice, section_header
@@ -17,19 +19,20 @@ setup_page("Overview", ":material/space_dashboard:")
 facade = get_facade()
 stats = facade.overview_stats()
 
-header, action = st.columns([5, 1.25], vertical_alignment="bottom")
-with header:
-    page_header(
-        "Operations overview",
-        "Delivery readiness, data quality and workflow status across the active marketing workspace.",
-        "Monitor",
-        "Runtime status · Healthy",
-    )
-with action:
-    if st.button("Start daily report", type="primary", width="stretch"):
-        st.switch_page("pages/2_Daily_Report.py")
+with st.container(key="page_intro"):
+    header, action = st.columns([5, 1.25], vertical_alignment="bottom")
+    with header:
+        page_header(
+            "Operations overview",
+            "Delivery readiness, data quality and workflow status across the active marketing workspace.",
+            "Monitor",
+            "Runtime status · Healthy",
+        )
+    with action:
+        if st.button("Start daily report", type="primary", width="stretch"):
+            st.switch_page("pages/2_Daily_Report.py")
 
-sandbox_notice(meta=f"Data scope · {' · '.join(stats['markets'])}")
+    sandbox_notice(meta=f"Data scope · {' · '.join(stats['markets'])}")
 
 kpi_grid(
     [
@@ -42,7 +45,7 @@ kpi_grid(
 
 quality_column, attention_column = st.columns([1.6, 1])
 with quality_column:
-    with st.container(border=True):
+    with st.container(border=True, key="panel_0_Overview_1"):
         section_header("Quality posture", "Canonical media plan versus deployed ad objects.", f"{stats['qc_total']:,} checks")
         st.plotly_chart(
             quality_posture_chart(stats["qc_passed"], stats["qc_warnings"], stats["qc_errors"]),
@@ -50,7 +53,7 @@ with quality_column:
             config={"displayModeBar": False},
         )
 with attention_column:
-    with st.container(border=True):
+    with st.container(border=True, key="panel_0_Overview_2"):
         section_header("Attention queue", "Items that require an operator decision.", f"{stats['open_exceptions']} open")
         if stats["qc_errors"]:
             attention_item(f"{stats['qc_errors']} blocking QC mismatches", "Review naming, targeting and configuration fields before activation.", "error")
@@ -64,10 +67,10 @@ with attention_column:
 section_header("Source readiness", "Record coverage by input platform before project filtering.", "Current workbook")
 source_chart, source_context = st.columns([1.35, 1])
 with source_chart:
-    with st.container(border=True):
+    with st.container(border=True, key="panel_0_Overview_3"):
         st.plotly_chart(source_coverage_chart(stats["source_counts"]), width="stretch", config={"displayModeBar": False})
 with source_context:
-    with st.container(border=True):
+    with st.container(border=True, key="panel_0_Overview_4"):
         section_header("Daily operating sequence", "Use the same traceable path for every reporting cycle.")
         attention_item("1 · Prepare source data", "Filter by market, repair funnel values and review the audit log.", "success")
         attention_item("2 · Review performance", "Generate deterministic KPIs, pacing and anomaly diagnosis.", "success")

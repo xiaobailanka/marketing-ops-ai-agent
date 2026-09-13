@@ -99,7 +99,7 @@ def attention_item(title: str, description: str, tone: Tone = "warning") -> None
 
 
 def html_table(headers: Sequence[str], rows: Iterable[Sequence[str]]) -> None:
-    head = "".join(f"<th>{_safe(item)}</th>" for item in headers)
+    head = "".join(f'<th scope="col">{_safe(item)}</th>' for item in headers)
     body = "".join("<tr>" + "".join(f"<td>{cell}</td>" for cell in row) + "</tr>" for row in rows)
     st.markdown(
         f'<div class="mops-table-wrap"><table class="mops-data-table"><thead><tr>{head}</tr></thead><tbody>{body}</tbody></table></div>',

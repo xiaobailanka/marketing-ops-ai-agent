@@ -7,6 +7,8 @@ from datetime import date
 import pandas as pd
 import streamlit as st
 
+from src.ui.dataframe import display_dataframe
+
 from src.ui.charts import cumulative_spend_chart, impression_chart, platform_chart
 from src.ui.components import empty_state, kpi_grid, page_header, sandbox_notice, section_header
 from src.ui.dataframe import excel_bytes, safe_display_frame
@@ -16,17 +18,18 @@ from src.ui.state import get_facade
 
 setup_page("Daily Report", ":material/query_stats:")
 facade = get_facade()
-page_header(
-    "Daily performance report",
-    "Review Python-computed KPIs, budget pacing, audience and creative performance, and fact-grounded diagnosis.",
-    "Operate",
-    "Metrics computed in Python",
-)
-sandbox_notice("Daily GTM performance · LLM never calculates metrics")
+with st.container(key="page_intro"):
+    page_header(
+        "Daily performance report",
+        "Review Python-computed KPIs, budget pacing, audience and creative performance, and fact-grounded diagnosis.",
+        "Operate",
+        "Metrics computed in Python",
+    )
+    sandbox_notice("Daily GTM performance · LLM never calculates metrics")
 
 section_header("Reporting scope", "Select a market and reporting date. Generation always starts from the auditable cleaning engine.")
 project_names = [f"{item.country} · {item.project_name}" for item in facade.config.projects]
-with st.container(border=True):
+with st.container(border=True, key="panel_2_Daily_Report_1"):
     control_left, control_mid, control_right = st.columns([1.5, 1, .95], vertical_alignment="bottom")
     selection = control_left.selectbox("Project", project_names)
     report_date = control_mid.date_input("Report date", value=date(2026, 8, 26))
@@ -62,28 +65,28 @@ if report:
     section_header("Delivery trend", "Spend pacing and recent impression movement.", "Runtime calculation")
     left_chart, right_chart = st.columns([1.35, 1])
     with left_chart:
-        with st.container(border=True):
+        with st.container(border=True, key="panel_2_Daily_Report_2"):
             section_header("Cumulative spend", "Actual delivery against the approved total budget.")
             st.plotly_chart(cumulative_spend_chart(report.daily_trend), width="stretch", config={"displayModeBar": False})
     with right_chart:
-        with st.container(border=True):
+        with st.container(border=True, key="panel_2_Daily_Report_3"):
             section_header("Impression trend", "Most recent 14-day delivery volume.")
             st.plotly_chart(impression_chart(report.daily_trend), width="stretch", config={"displayModeBar": False})
 
     section_header("Platform performance", "Compare channel delivery and inspect the underlying calculated fields.")
     platform_left, platform_right = st.columns([1, 1])
     with platform_left:
-        with st.container(border=True):
+        with st.container(border=True, key="panel_2_Daily_Report_4"):
             st.plotly_chart(platform_chart(report.platform_performance), width="stretch", config={"displayModeBar": False})
     with platform_right:
-        st.dataframe(safe_display_frame(report.platform_performance), width="stretch", hide_index=True)
+        display_dataframe(safe_display_frame(report.platform_performance), width="stretch", hide_index=True)
 
     section_header("Performance detail", "Ranked breakdowns, deterministic anomaly events and fact-grounded narrative.")
     tabs = st.tabs(["Audience", "Creative", "Diagnosis", "All KPI"])
     with tabs[0]:
-        st.dataframe(safe_display_frame(report.audience_performance), width="stretch", hide_index=True)
+        display_dataframe(safe_display_frame(report.audience_performance), width="stretch", hide_index=True)
     with tabs[1]:
-        st.dataframe(safe_display_frame(report.creative_performance), width="stretch", hide_index=True)
+        display_dataframe(safe_display_frame(report.creative_performance), width="stretch", hide_index=True)
     with tabs[2]:
         for heading, text in report.diagnosis.items():
             st.markdown(f"#### {heading}")
@@ -95,7 +98,7 @@ if report:
         else:
             st.success("No threshold events were detected for this report.")
     with tabs[3]:
-        st.dataframe(safe_display_frame(pd.DataFrame([cards])), width="stretch", hide_index=True)
+        display_dataframe(safe_display_frame(pd.DataFrame([cards])), width="stretch", hide_index=True)
 
     action_columns = st.columns([1.1, 1.1, 3])
     if action_columns[0].button("Sync report worksheet", width="stretch"):

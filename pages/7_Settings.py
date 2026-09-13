@@ -7,6 +7,8 @@ import os
 import pandas as pd
 import streamlit as st
 
+from src.ui.dataframe import display_dataframe
+
 from src.models.project import ProjectConfig
 from src.ui.components import kpi_grid, page_header, sandbox_notice, section_header
 from src.ui.layout import setup_page
@@ -16,25 +18,31 @@ from src.utils.config import load_anomaly_thresholds
 
 setup_page("Settings", ":material/settings:")
 facade = get_facade()
-page_header(
-    "Workspace settings",
-    "Manage session-scoped project budgets, reporting dates, destination identifiers, anomaly thresholds and connector readiness.",
-    "System",
-    "Secrets never rendered",
-)
-sandbox_notice("Configuration changes apply only to the current browser session")
+with st.container(key="page_intro"):
+    page_header(
+        "Workspace settings",
+        "Manage session-scoped project budgets, reporting dates, destination identifiers, anomaly thresholds and connector readiness.",
+        "System",
+        "Secrets never rendered",
+    )
+    sandbox_notice("Configuration changes apply only to the current browser session")
 
 section_header("Project configuration", "Edit the operating scope used by cleaning, reporting and downstream synchronization.", f"{len(facade.config.projects)} projects")
 project_frame = pd.DataFrame([project.model_dump() for project in facade.config.projects])
-with st.container(border=True):
+with st.container(border=True, key="panel_7_Settings_1"):
     edited = st.data_editor(
         project_frame,
         width="stretch",
         num_rows="dynamic",
         hide_index=True,
         column_config={
-            "total_budget": st.column_config.NumberColumn("Total budget", min_value=1.0, format="$%.2f"),
-            "anomaly_threshold": st.column_config.NumberColumn("Anomaly threshold", min_value=0.01, max_value=0.99, format="%.2f"),
+            "country": "COUNTRY",
+            "project_name": "PROJECT_NAME",
+            "campaign_start_date": "CAMPAIGN_START_DATE",
+            "campaign_end_date": "CAMPAIGN_END_DATE",
+            "google_sheet_id": "GOOGLE_SHEET_ID",
+            "total_budget": st.column_config.NumberColumn("TOTAL BUDGET", min_value=1.0, format="$%.2f"),
+            "anomaly_threshold": st.column_config.NumberColumn("ANOMALY THRESHOLD", min_value=0.01, max_value=0.99, format="%.2f"),
         },
     )
     save_column, reset_note = st.columns([1, 4], vertical_alignment="center")
@@ -54,8 +62,8 @@ thresholds = load_anomaly_thresholds()
 threshold_frame = pd.DataFrame(
     [{"Threshold": str(name).replace("_", " ").title(), "Configured value": value} for name, value in thresholds.items()]
 )
-with st.container(border=True):
-    st.dataframe(threshold_frame, width="stretch", hide_index=True)
+with st.container(border=True, key="panel_7_Settings_2"):
+    display_dataframe(threshold_frame, width="stretch", hide_index=True)
     st.caption("Thresholds are loaded from version-controlled configuration and are not calculated or changed by the LLM.")
 
 section_header("Connector readiness", "External credentials are detected from environment variables; unavailable services use explicit sandbox adapters.")
@@ -85,5 +93,5 @@ status_frame = pd.DataFrame(
         for name, configured in connectors.items()
     ]
 )
-st.dataframe(status_frame, width="stretch", hide_index=True)
+display_dataframe(status_frame, width="stretch", hide_index=True)
 st.caption("Secrets are loaded only from environment variables and are never displayed, logged or committed.")

@@ -14,13 +14,14 @@ from src.ui.state import get_facade
 
 setup_page("Agent Copilot", ":material/smart_toy:")
 facade = get_facade()
-page_header(
-    "Agent Copilot",
-    "Route natural-language requests to the same deterministic cleaning, reporting, synchronization and QC services used by the workbenches.",
-    "System",
-    "Transparent tool routing",
-)
-sandbox_notice("Session-scoped conversation · Deterministic tools")
+with st.container(key="page_intro"):
+    page_header(
+        "Agent Copilot",
+        "Route natural-language requests to the same deterministic cleaning, reporting, synchronization and QC services used by the workbenches.",
+        "System",
+        "Transparent tool routing",
+    )
+    sandbox_notice("Session-scoped conversation · Deterministic tools")
 notice(
     "The Copilot cannot enable, pause or delete campaigns, or change budget, bid, audience or creative in Google Ads.",
     label="Safety boundary",

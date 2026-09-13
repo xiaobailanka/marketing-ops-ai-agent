@@ -25,13 +25,13 @@ def cumulative_spend_chart(frame: pd.DataFrame) -> go.Figure:
     figure.add_trace(
         go.Scatter(
             x=frame["Date"], y=frame["Cumulative Spend"], name="Cumulative spend",
-            line={"color": COLORS["primary"], "width": 3}, fill="tozeroy", fillcolor="rgba(22,122,108,.08)",
+            line={"color": COLORS["primary"], "width": 3}, fill="tozeroy", fillcolor=COLORS["primary_soft"],
         )
     )
     figure.add_trace(
         go.Scatter(
             x=frame["Date"], y=frame["Total Budget"], name="Total budget",
-            line={"color": "#D29A36", "dash": "dash", "width": 2},
+            line={"color": COLORS["warning"], "dash": "dash", "width": 2},
         )
     )
     return _style(figure, 340)
@@ -46,7 +46,7 @@ def impression_chart(frame: pd.DataFrame) -> go.Figure:
 def platform_chart(frame: pd.DataFrame) -> go.Figure:
     figure = px.bar(
         frame, x="Platform", y=["Spend", "Impression"], barmode="group",
-        color_discrete_sequence=[COLORS["primary"], "#8CC8BE"],
+        color_discrete_sequence=CHART_COLORS[:2],
     )
     figure.update_traces(marker_line_width=0)
     return _style(figure, 340)
@@ -54,7 +54,7 @@ def platform_chart(frame: pd.DataFrame) -> go.Figure:
 
 def quality_posture_chart(passed: int, warnings: int, errors: int) -> go.Figure:
     figure = go.Figure()
-    values = (("Passed", passed, COLORS["success"]), ("Warnings", warnings, "#D29A36"), ("Errors", errors, COLORS["error"]))
+    values = (("Passed", passed, COLORS["success"]), ("Warnings", warnings, COLORS["warning"]), ("Errors", errors, COLORS["error"]))
     for label, value, color in values:
         figure.add_trace(
             go.Bar(

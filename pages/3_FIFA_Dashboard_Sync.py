@@ -7,6 +7,8 @@ from datetime import date
 import pandas as pd
 import streamlit as st
 
+from src.ui.dataframe import display_dataframe
+
 from src.ui.components import empty_state, kpi_grid, page_header, sandbox_notice, section_header, workflow_stepper
 from src.ui.dataframe import safe_display_frame
 from src.ui.layout import setup_page
@@ -15,21 +17,22 @@ from src.ui.state import get_facade
 
 setup_page("FIFA Dashboard Sync", ":material/sync_alt:")
 facade = get_facade()
-page_header(
-    "FIFA dashboard sync",
-    "Scan the shared workspace, validate the target file and perform deterministic idempotent Bitable upsert.",
-    "Assurance",
-    "Sandbox Bitable · Session isolated",
-)
-sandbox_notice("Shared-drive sample files · Deterministic business key")
+with st.container(key="page_intro"):
+    page_header(
+        "FIFA dashboard sync",
+        "Scan the shared workspace, validate the target file and perform deterministic idempotent Bitable upsert.",
+        "Assurance",
+        "Sandbox Bitable · Session isolated",
+    )
+    sandbox_notice("Shared-drive sample files · Deterministic business key")
 
-sync = st.session_state.get("fifa_sync_result")
-preview = st.session_state.get("fifa_preview")
-active_step = 2 if sync else 1 if preview else 0
-workflow_stepper(("Select source", "Preview cleaning", "Review sync"), active_step)
+    sync = st.session_state.get("fifa_sync_result")
+    preview = st.session_state.get("fifa_preview")
+    active_step = 2 if sync else 1 if preview else 0
+    workflow_stepper(("Select source", "Preview cleaning", "Review sync"), active_step)
 
 section_header("Sync controls", "Select the target date, inspect the latest available file and run the upsert only when the source is ready.")
-with st.container(border=True):
+with st.container(border=True, key="panel_3_FIFA_Dashboard_Sync_1"):
     target_column, scan_column, preview_column, sync_column = st.columns([1.1, .9, .9, .9], vertical_alignment="bottom")
     with target_column:
         target_date = st.date_input("Target date", value=date(2026, 8, 26))
@@ -90,7 +93,7 @@ if preview:
         ],
         columns=5,
     )
-    st.dataframe(safe_display_frame(cleaning.after.head(100)), width="stretch", hide_index=True)
+    display_dataframe(safe_display_frame(cleaning.after.head(100)), width="stretch", hide_index=True)
 
 sync = st.session_state.get("fifa_sync_result")
 if sync:
@@ -108,7 +111,7 @@ if sync:
     )
     with st.expander("View change audit", expanded=True):
         if result.changes:
-            st.dataframe(pd.DataFrame(result.changes), width="stretch", hide_index=True)
+            display_dataframe(pd.DataFrame(result.changes), width="stretch", hide_index=True)
         else:
             empty_state("No record changes", "Every business key and canonical value already matched the current sandbox table.", "OK")
     st.caption("Run synchronization again with the same file to verify idempotency. The visitor's sandbox table remains isolated in Session State.")
