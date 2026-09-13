@@ -32,14 +32,15 @@ section_header("Source and scope", "Choose the operating market and report date.
 
 project_names = [f"{item.country} · {item.project_name}" for item in facade.config.projects]
 with st.container(border=True, key="panel_1_Data_Cleaning_1"):
-    controls = st.columns([1.25, 1, 1.35, .9], vertical_alignment="bottom")
+    controls = st.columns([1.4, 1], gap="large", vertical_alignment="bottom")
     with controls[0]:
         selection = st.selectbox("Project", project_names)
     with controls[1]:
         report_date = st.date_input("Report date", value=date(2026, 8, 26))
-    with controls[2]:
+    upload_action = st.columns([3, 1], gap="large", vertical_alignment="bottom")
+    with upload_action[0]:
         uploaded = st.file_uploader("Source workbook", type=["xlsx", "xls"])
-    with controls[3]:
+    with upload_action[1]:
         run = st.button("Run cleaning", type="primary", width="stretch")
 
 if run:

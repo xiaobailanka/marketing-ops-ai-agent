@@ -34,6 +34,7 @@ def render_sidebar_context(configured_integrations: int) -> None:
     st.sidebar.markdown(
         f"""<div class="mops-sidebar-context"><div class="mops-sidebar-context__status">PUBLIC SANDBOX · HEALTHY</div>
         <div class="mops-sidebar-context__copy">Anonymized operational sample data.<br>
-        External integrations configured: {configured_integrations}/4</div></div>""",
+        External integrations configured: {configured_integrations}/4</div>
+        <div class="mops-release">INTERFACE 2.0</div></div>""",
         unsafe_allow_html=True,
     )

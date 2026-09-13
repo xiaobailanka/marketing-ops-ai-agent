@@ -9,8 +9,8 @@ import streamlit as st
 
 COLORS = {
     "accent": "#10B981",
-    "nav": "#0F172A",
-    "nav_active": "#173C3C",
+    "nav": "#FFFFFF",
+    "nav_active": "#ECFDF5",
     "primary": "#047857",
     "primary_hover": "#065F46",
     "primary_soft": "#ECFDF5",
@@ -35,8 +35,8 @@ PLOTLY_LAYOUT = {
     "paper_bgcolor": COLORS["surface"],
     "plot_bgcolor": COLORS["surface"],
     "hoverlabel": {
-        "bgcolor": COLORS["nav"],
-        "bordercolor": COLORS["nav"],
+        "bgcolor": COLORS["ink"],
+        "bordercolor": COLORS["ink"],
         "font": {"color": "#FFFFFF", "family": "Segoe UI, sans-serif"},
     },
     "xaxis": {

@@ -6,7 +6,7 @@
     <rect x="10" y="23" width="4" height="8" rx="2" fill="#6EE7B7"/>
     <rect x="17" y="16" width="4" height="15" rx="2" fill="#D1FAE5"/>
     <rect x="24" y="11" width="4" height="20" rx="2" fill="#FFFFFF"/>
-    <text x="47" y="21" fill="#FFFFFF" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="700">Marketing Operations</text>
+    <text x="47" y="21" fill="#0F172A" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="700">Marketing Operations</text>
     <text x="47" y="35" fill="#94A3B8" font-family="Segoe UI, Arial, sans-serif" font-size="8" font-weight="700" letter-spacing="1.25">CONTROL WORKSPACE</text>
   </g>
 </svg>
